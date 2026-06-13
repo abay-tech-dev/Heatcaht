@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 
-export default function Widget() {
+export default function Widget({ params }: { params: { id: string } }) {
   const [hype, setHype] = useState(72)
-  const [emotes] = useState(['POGGERS', 'W', 'LUL'])
+  const [emotes, setEmotes] = useState(['POGGERS', 'W', 'LUL'])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -16,15 +16,10 @@ export default function Widget() {
   const barColor = hype >= 70 ? '#a855f7' : hype >= 40 ? '#eab308' : '#ef4444'
 
   return (
-    <div style={{ backgroundColor: 'transparent', minHeight: '100vh', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', padding: 16 }}>
-      <div style={{
-        backgroundColor: 'rgba(15, 15, 20, 0.85)',
-        backdropFilter: 'blur(8px)',
-        border: '1px solid rgba(168, 85, 247, 0.3)',
-        borderRadius: 16,
-        padding: '16px 20px',
-        minWidth: 200,
-      }}>
+    <div className="bg-transparent min-h-screen flex items-end justify-start p-4">
+      <div
+        style={{ backgroundColor: 'rgba(15, 15, 20, 0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: 16, padding: '16px 20px', minWidth: 200 }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <span style={{ fontSize: 20 }}>🔥</span>
           <span style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 14, fontFamily: 'sans-serif' }}>Chat Heat</span>
