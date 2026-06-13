@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { analyzeChat } from '@/lib/claude'
+import { analyzeChat } from '@/lib/groq'
 
 export async function POST(req: NextRequest) {
   const { messages } = await req.json()
