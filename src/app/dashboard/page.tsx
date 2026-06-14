@@ -47,14 +47,18 @@ export default function Dashboard() {
   })
   const [input, setInput] = useState('')
   const [channel, setChannel] = useState('demo')
+  const [channelInput, setChannelInput] = useState('')
+  const [isLive, setIsLive] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null)
+  const twitchClientRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(u => {
       if (u) {
         setSessionUser(u)
         setChannel(u.twitch_username)
+        setChannelInput(u.twitch_username)
       }
     })
   }, [])
@@ -113,6 +117,44 @@ export default function Dashboard() {
     setInput('')
   }
 
+  function connectTwitch() {
+    if (twitchClientRef.current) {
+      twitchClientRef.current.close()
+    }
+    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443')
+    twitchClientRef.current = ws
+
+    ws.onopen = () => {
+      ws.send('PASS oauth:anonymous')
+      ws.send('NICK justinfan12345')
+      ws.send(`JOIN #${channelInput.toLowerCase()}`)
+      setIsLive(true)
+      setChannel(channelInput.toLowerCase())
+      setMessages([])
+    }
+
+    ws.onmessage = (event) => {
+      const line = event.data as string
+      if (line.startsWith('PING')) {
+        ws.send('PONG :tmi.twitch.tv')
+        return
+      }
+      const match = line.match(/^:(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)/)
+      if (match) {
+        addMessage(match[1], match[2].trim())
+      }
+    }
+
+    ws.onclose = () => setIsLive(false)
+    ws.onerror = () => setIsLive(false)
+  }
+
+  function disconnectTwitch() {
+    twitchClientRef.current?.close()
+    twitchClientRef.current = null
+    setIsLive(false)
+  }
+
   const scoreColor = (score: number) =>
     score >= 70 ? 'text-green-400' : score >= 40 ? 'text-yellow-400' : 'text-red-400'
 
@@ -149,6 +191,35 @@ export default function Dashboard() {
           )}
         </div>
       </nav>
+
+      {/* Barre de connexion Twitch */}
+      <div className="border-b border-gray-800 px-6 py-3 flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-1 max-w-sm">
+          <span className="text-gray-400 text-sm shrink-0">#</span>
+          <input
+            value={channelInput}
+            onChange={e => setChannelInput(e.target.value)}
+            placeholder="pseudo twitch"
+            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 outline-none focus:border-purple-500"
+          />
+        </div>
+        {isLive ? (
+          <button onClick={disconnectTwitch} className="bg-red-600 hover:bg-red-500 px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            Stop
+          </button>
+        ) : (
+          <button onClick={connectTwitch} disabled={!channelInput.trim()} className="bg-green-600 hover:bg-green-500 disabled:opacity-40 px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors">
+            ▶ Connecter le chat
+          </button>
+        )}
+        {isLive && (
+          <span className="text-green-400 text-sm flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            Live — #{channel}
+          </span>
+        )}
+      </div>
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Scores */}
