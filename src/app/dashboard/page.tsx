@@ -39,11 +39,11 @@ const DEMO_MESSAGES = [
 export default function Dashboard() {
   const [messages, setMessages] = useState<Message[]>([])
   const [analysis, setAnalysis] = useState<Analysis>({
-    hypeScore: 72,
-    engagementScore: 85,
-    toxicityScore: 8,
-    summary: 'Chat is highly engaged and excited about the gameplay.',
-    topEmotes: ['POGGERS', 'W', 'LUL'],
+    hypeScore: 0,
+    engagementScore: 0,
+    toxicityScore: 0,
+    summary: 'En attente de l\'analyse...',
+    topEmotes: [],
   })
   const [input, setInput] = useState('')
   const [channel, setChannel] = useState('demo')
@@ -87,6 +87,7 @@ export default function Dashboard() {
         const res = await fetch('/api/chat/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ messages: toAnalyze }),
         })
         if (res.ok) {
