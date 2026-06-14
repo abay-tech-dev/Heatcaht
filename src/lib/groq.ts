@@ -77,13 +77,18 @@ export async function analyzeChat(messages: string[]): Promise<ChatAnalysis> {
 
   const sample = messages.slice(-50)
   const heuristic = heuristicAnalysis(sample)
+  const capsCount = sample.filter(m => {
+    const letters = m.replace(/[^a-zA-Z]/g, '')
+    return letters.length > 0 && m.replace(/[^A-Z]/g, '').length / letters.length > 0.3
+  }).length
+  const exclamCount = sample.filter(m => m.includes('!')).length
 
   const prompt = `You are analyzing a Twitch chat. Here are ${sample.length} messages:
 ${sample.join('\n')}
 
 Context clues:
-- Caps ratio is ${Math.round((sample.filter(m => m.replace(/[^A-Z]/g, '').length / Math.max(m.replace(/[^a-zA-Z]/g, '').length, 1)) > 0.3).length / sample.length * 100)}%
-- Exclamation marks in ${Math.round(sample.filter(m => m.includes('!')).length / sample.length * 100)}% of messages
+- High caps in ${Math.round(capsCount / sample.length * 100)}% of messages
+- Exclamation marks in ${Math.round(exclamCount / sample.length * 100)}% of messages
 
 Return ONLY a JSON object with:
 - hypeScore (integer 0-100)
