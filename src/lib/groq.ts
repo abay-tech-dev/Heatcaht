@@ -10,34 +10,92 @@ export interface ChatAnalysis {
   topEmotes: string[]
 }
 
-const DEFAULT: ChatAnalysis = {
-  hypeScore: 50,
-  engagementScore: 50,
-  toxicityScore: 10,
-  summary: 'Chat actif.',
-  topEmotes: [],
+const HYPE_KEYWORDS = ['pog', 'poggers', 'lets go', 'letsgo', 'gg', 'w', 'winning', 'goat', 'cracked', 'insane', 'crazy', 'fire', 'based', 'hyped', 'hype', 'go', 'wow', 'omg', 'yes', 'yess', 'lesgo', 'lfg', 'clutch', 'ez']
+const HYPE_EMOTES = ['poggers', 'pog', 'pogu', 'pepelaugh', 'lul', 'lulw', 'kekw', 'omegalul', 'pepehands', 'monkas', 'widepeeposad', 'peeposad', 'clap', 'peepoClap', '5head', 'pepega']
+const TOXIC_KEYWORDS = ['trash', 'bad', 'noob', 'terrible', 'worst', 'hate', 'stupid', 'idiot', 'kys', 'die', 'garbage', 'awful']
+
+function heuristicAnalysis(messages: string[]): ChatAnalysis {
+  if (messages.length === 0) {
+    return { hypeScore: 0, engagementScore: 0, toxicityScore: 0, summary: 'Aucun message.', topEmotes: [] }
+  }
+
+  const texts = messages.map(m => m.toLowerCase())
+  const total = messages.length
+
+  // Caps ratio — beaucoup de majuscules = hype
+  const capsRatio = messages.reduce((acc, m) => {
+    const letters = m.replace(/[^a-zA-Z]/g, '')
+    if (letters.length === 0) return acc
+    return acc + (m.replace(/[^A-Z]/g, '').length / letters.length)
+  }, 0) / total
+
+  // Exclamations
+  const exclamRatio = messages.filter(m => m.includes('!')).length / total
+
+  // Hype keywords
+  const hypeHits = texts.filter(m => HYPE_KEYWORDS.some(k => m.includes(k))).length / total
+
+  // Hype emotes
+  const emoteHits = texts.filter(m => HYPE_EMOTES.some(e => m.includes(e))).length / total
+
+  // Toxicité
+  const toxicHits = texts.filter(m => TOXIC_KEYWORDS.some(k => m.includes(k))).length / total
+
+  // Compte les mots/emotes récurrents
+  const wordCount: Record<string, number> = {}
+  texts.forEach(m => {
+    m.split(/\s+/).forEach(w => {
+      if (w.length > 2) wordCount[w] = (wordCount[w] || 0) + 1
+    })
+  })
+  const topEmotes = Object.entries(wordCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([w]) => w.toUpperCase())
+
+  // Volume bonus — plus il y a de messages, plus c'est engagé
+  const volumeBonus = Math.min(total / 30, 1) * 20
+
+  const hypeScore = Math.min(100, Math.round((capsRatio * 30 + exclamRatio * 25 + hypeHits * 30 + emoteHits * 15) * 100 + volumeBonus))
+  const engagementScore = Math.min(100, Math.round(volumeBonus * 2 + hypeScore * 0.5 + 20))
+  const toxicityScore = Math.min(100, Math.round(toxicHits * 100))
+
+  const summary = hypeScore >= 70
+    ? `Chat en feu ! ${total} messages avec beaucoup d'hype.`
+    : hypeScore >= 40
+    ? `Chat actif avec ${total} messages.`
+    : `Chat calme — ${total} messages reçus.`
+
+  return { hypeScore, engagementScore, toxicityScore, summary, topEmotes }
 }
 
 export async function analyzeChat(messages: string[]): Promise<ChatAnalysis> {
-  // Limite à 50 messages max pour éviter de dépasser le context
+  // Moins de 8 messages → heuristique pure (pas besoin d'IA)
+  if (messages.length < 8) {
+    return heuristicAnalysis(messages)
+  }
+
   const sample = messages.slice(-50)
+  const heuristic = heuristicAnalysis(sample)
 
-  const prompt = `Analyze these Twitch chat messages and return a JSON object with exactly these fields:
-- hypeScore (integer 0-100): how hype/excited the chat is
-- engagementScore (integer 0-100): how engaged viewers are
-- toxicityScore (integer 0-100): how toxic/negative the chat is
-- summary (string): 1 short sentence describing the chat mood
-- topEmotes (array of 3 strings): top emotes or recurring words
-
-Messages:
+  const prompt = `You are analyzing a Twitch chat. Here are ${sample.length} messages:
 ${sample.join('\n')}
 
-Return ONLY a valid JSON object.`
+Context clues:
+- Caps ratio is ${Math.round((sample.filter(m => m.replace(/[^A-Z]/g, '').length / Math.max(m.replace(/[^a-zA-Z]/g, '').length, 1)) > 0.3).length / sample.length * 100)}%
+- Exclamation marks in ${Math.round(sample.filter(m => m.includes('!')).length / sample.length * 100)}% of messages
+
+Return ONLY a JSON object with:
+- hypeScore (integer 0-100)
+- engagementScore (integer 0-100)
+- toxicityScore (integer 0-100)
+- summary (1 short sentence in French)
+- topEmotes (array of 3 most used words/emotes in UPPERCASE)`
 
   try {
     const completion = await client.chat.completions.create({
       model: 'llama3-8b-8192',
-      max_tokens: 300,
+      max_tokens: 200,
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
     })
@@ -45,15 +103,16 @@ Return ONLY a valid JSON object.`
     const text = completion.choices[0].message.content ?? '{}'
     const parsed = JSON.parse(text)
 
+    // Mixe heuristique + IA pour plus de précision
     return {
-      hypeScore: Number(parsed.hypeScore) || DEFAULT.hypeScore,
-      engagementScore: Number(parsed.engagementScore) || DEFAULT.engagementScore,
-      toxicityScore: Number(parsed.toxicityScore) || DEFAULT.toxicityScore,
-      summary: parsed.summary || DEFAULT.summary,
-      topEmotes: Array.isArray(parsed.topEmotes) ? parsed.topEmotes : DEFAULT.topEmotes,
+      hypeScore: Math.round((Number(parsed.hypeScore) + heuristic.hypeScore) / 2) || heuristic.hypeScore,
+      engagementScore: Math.round((Number(parsed.engagementScore) + heuristic.engagementScore) / 2) || heuristic.engagementScore,
+      toxicityScore: Math.round((Number(parsed.toxicityScore) + heuristic.toxicityScore) / 2) || heuristic.toxicityScore,
+      summary: parsed.summary || heuristic.summary,
+      topEmotes: Array.isArray(parsed.topEmotes) ? parsed.topEmotes : heuristic.topEmotes,
     }
   } catch (err) {
     console.error('Groq error:', err)
-    return DEFAULT
+    return heuristic
   }
 }

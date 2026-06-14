@@ -21,15 +21,15 @@ export async function POST(req: NextRequest) {
   // Sauvegarde le score si l'utilisateur est connecté
   const session = await getSession()
   if (session) {
-    await supabaseAdmin.from('scores').insert({
+    const { error } = await supabaseAdmin.from('scores').insert({
       user_id: session.id,
-      stream_id: session.id, // temporaire — on utilisera le vrai stream_id plus tard
       hype_score: analysis.hypeScore,
       engagement_score: analysis.engagementScore,
       toxicity_score: analysis.toxicityScore,
       summary: analysis.summary,
       top_emotes: analysis.topEmotes,
     })
+    if (error) console.error('Score save error:', error.message)
   }
 
   return NextResponse.json(analysis)
