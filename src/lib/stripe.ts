@@ -13,13 +13,13 @@ export const PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 29,
+    price: 19,
     priceId: process.env.STRIPE_PRO_PRICE_ID!,
     features: ['5 channels', 'AI analysis', 'Custom widget', 'Discord alerts'],
   },
   agency: {
     name: 'Agency',
-    price: 99,
+    price: 49,
     priceId: process.env.STRIPE_AGENCY_PRICE_ID!,
     features: ['Unlimited channels', 'Full API access', 'White label', 'Priority support'],
   },

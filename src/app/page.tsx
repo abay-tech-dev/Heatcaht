@@ -49,8 +49,8 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-8">
           {[
             { name: 'Starter', price: 9, features: ['1 channel', 'Basic analytics', 'OBS widget'], highlight: false },
-            { name: 'Pro', price: 29, features: ['5 channels', 'AI analysis', 'Custom widget', 'Discord alerts'], highlight: true },
-            { name: 'Agency', price: 99, features: ['Unlimited channels', 'Full API', 'White label', 'Priority support'], highlight: false },
+            { name: 'Pro', price: 19, features: ['5 channels', 'AI analysis', 'Custom widget', 'Discord alerts'], highlight: true },
+            { name: 'Agency', price: 49, features: ['Unlimited channels', 'Full API', 'White label', 'Priority support'], highlight: false },
           ].map((plan) => (
             <div key={plan.name} className={`rounded-2xl p-8 border ${plan.highlight ? 'bg-purple-900/20 border-purple-500' : 'bg-gray-900 border-gray-800'}`}>
               <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
