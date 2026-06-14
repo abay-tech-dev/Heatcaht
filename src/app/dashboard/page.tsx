@@ -66,14 +66,15 @@ export default function Dashboard() {
   const msgIdRef = useRef(0)
   const batchRef = useRef<string[]>([])
 
-  // Simulate incoming messages in demo mode
+  // Simulate incoming messages in demo mode — arrête quand on est en live
   useEffect(() => {
+    if (isLive) return
     const interval = setInterval(() => {
       const demo = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)]
       addMessage(demo.user, demo.text)
     }, 1500)
     return () => clearInterval(interval)
-  }, [])
+  }, [isLive])
 
   // Analyze batch every 10 seconds
   useEffect(() => {
