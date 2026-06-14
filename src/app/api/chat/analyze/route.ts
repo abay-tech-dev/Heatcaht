@@ -9,7 +9,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No messages provided' }, { status: 400 })
   }
 
-  const analysis = await analyzeChat(messages)
+  let analysis
+  try {
+    analysis = await analyzeChat(messages)
+  } catch (err) {
+    console.error('analyzeChat error:', err)
+    return NextResponse.json({ error: 'Analyse échouée' }, { status: 500 })
+  }
 
   // Sauvegarde en base si on a un stream actif
   if (stream_id && user_id) {
