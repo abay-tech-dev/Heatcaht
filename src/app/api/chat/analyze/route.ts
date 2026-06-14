@@ -1,11 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { analyzeChat } from '@/lib/groq'
+import { saveScore } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
-  const { messages } = await req.json()
+  const { messages, stream_id, user_id } = await req.json()
+
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: 'No messages provided' }, { status: 400 })
   }
+
   const analysis = await analyzeChat(messages)
+
+  // Sauvegarde en base si on a un stream actif
+  if (stream_id && user_id) {
+    await saveScore(
+      stream_id,
+      user_id,
+      analysis.hypeScore,
+      analysis.engagementScore,
+      analysis.toxicityScore,
+      analysis.summary,
+      analysis.topEmotes
+    )
+  }
+
   return NextResponse.json(analysis)
 }
