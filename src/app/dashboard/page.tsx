@@ -76,7 +76,7 @@ export default function Dashboard() {
     return () => clearInterval(interval)
   }, [isLive])
 
-  // Analyze batch every 10 seconds
+  // Analyze batch every 5 seconds
   useEffect(() => {
     const interval = setInterval(async () => {
       if (batchRef.current.length === 0) return
@@ -102,7 +102,7 @@ export default function Dashboard() {
       } finally {
         setIsAnalyzing(false)
       }
-    }, 10000)
+    }, 5000)
     return () => clearInterval(interval)
   }, [])
 

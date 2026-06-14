@@ -36,7 +36,7 @@ export default function Widget({ params }: { params: { id: string } }) {
       } catch {}
     }
     fetchScore()
-    const interval = setInterval(fetchScore, 10000)
+    const interval = setInterval(fetchScore, 5000)
     return () => clearInterval(interval)
   }, [params.id])
 
