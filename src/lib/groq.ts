@@ -56,8 +56,12 @@ function heuristicAnalysis(messages: string[]): ChatAnalysis {
   // Volume bonus — plus il y a de messages, plus c'est engagé
   const volumeBonus = Math.min(total / 30, 1) * 20
 
-  const hypeScore = Math.min(100, Math.round((capsRatio * 30 + exclamRatio * 25 + hypeHits * 30 + emoteHits * 15) * 100 + volumeBonus))
-  const engagementScore = Math.min(100, Math.round(volumeBonus * 2 + hypeScore * 0.5 + 20))
+  // Score brut 0-100 basé sur les signaux
+  const rawHype = (capsRatio * 25 + exclamRatio * 20 + hypeHits * 35 + emoteHits * 20) * 100
+  // Pénalité si peu de messages — pas de hype avec 3 messages
+  const volumePenalty = total < 5 ? 0.3 : total < 10 ? 0.6 : 1
+  const hypeScore = Math.min(100, Math.round(rawHype * volumePenalty + volumeBonus))
+  const engagementScore = Math.min(100, Math.round(volumeBonus * 3 + hypeScore * 0.3))
   const toxicityScore = Math.min(100, Math.round(toxicHits * 100))
 
   const summary = hypeScore >= 70

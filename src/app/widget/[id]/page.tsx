@@ -14,6 +14,7 @@ export default function Widget({ params }: { params: { id: string } }) {
   useEffect(() => {
     async function fetchScore() {
       try {
+        if (!params.id || params.id === 'undefined' || params.id === 'demo') return
         const res = await fetch(`/api/widget/score?token=${params.id}`)
         if (!res.ok) return
         const data = await res.json()
