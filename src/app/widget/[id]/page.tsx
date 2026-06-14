@@ -3,30 +3,41 @@
 import { useState, useEffect } from 'react'
 
 export default function Widget({ params }: { params: { id: string } }) {
-  const [hype, setHype] = useState(72)
-  const [prevHype, setPrevHype] = useState(72)
-  const [emotes, setEmotes] = useState(['POGGERS', 'W', 'LUL'])
+  const [hype, setHype] = useState(0)
+  const [prevHype, setPrevHype] = useState(0)
+  const [emotes, setEmotes] = useState<string[]>([])
   const [particles, setParticles] = useState<{ id: number; x: number; y: number }[]>([])
   const [pulse, setPulse] = useState(false)
+  const [ready, setReady] = useState(false)
 
+  // Récupère les vrais scores depuis Supabase toutes les 10 secondes
   useEffect(() => {
-    const interval = setInterval(() => {
-      setHype((prev) => {
-        const next = Math.min(100, Math.max(0, prev + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 8)))
-        setPrevHype(prev)
-        if (next > prev + 3) {
-          setPulse(true)
-          setTimeout(() => setPulse(false), 600)
-          setParticles((p) => [
-            ...p.slice(-6),
-            { id: Date.now(), x: Math.random() * 180, y: Math.random() * 40 },
-          ])
-        }
-        return next
-      })
-    }, 2000)
+    async function fetchScore() {
+      try {
+        const res = await fetch(`/api/widget/score?token=${params.id}`)
+        if (!res.ok) return
+        const data = await res.json()
+        const newHype = data.hypeScore ?? 0
+        setPrevHype((prev) => {
+          if (newHype > prev + 3) {
+            setPulse(true)
+            setTimeout(() => setPulse(false), 600)
+            setParticles((p) => [
+              ...p.slice(-6),
+              { id: Date.now(), x: Math.random() * 180, y: Math.random() * 40 },
+            ])
+          }
+          return prev
+        })
+        setHype(newHype)
+        setEmotes(data.topEmotes ?? [])
+        setReady(true)
+      } catch {}
+    }
+    fetchScore()
+    const interval = setInterval(fetchScore, 10000)
     return () => clearInterval(interval)
-  }, [])
+  }, [params.id])
 
   useEffect(() => {
     if (particles.length === 0) return
