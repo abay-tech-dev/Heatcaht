@@ -1,4 +1,17 @@
+'use client'
+
 import Link from 'next/link'
+
+async function handleCheckout(plan: string) {
+  const res = await fetch('/api/stripe/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plan }),
+  })
+  const data = await res.json()
+  if (data.url) window.location.href = data.url
+  else window.location.href = '/api/auth/twitch'
+}
 
 export default function Home() {
   return (
@@ -62,8 +75,11 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <button className={`w-full py-3 rounded-xl font-semibold transition-colors ${plan.highlight ? 'bg-purple-600 hover:bg-purple-500' : 'bg-gray-800 hover:bg-gray-700'}`}>
-                Get started
+              <button
+                onClick={() => handleCheckout(plan.name.toLowerCase())}
+                className={`w-full py-3 rounded-xl font-semibold transition-colors ${plan.highlight ? 'bg-purple-600 hover:bg-purple-500' : 'bg-gray-800 hover:bg-gray-700'}`}
+              >
+                Commencer →
               </button>
             </div>
           ))}
