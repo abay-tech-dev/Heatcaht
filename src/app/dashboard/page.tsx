@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
+interface SessionUser {
+  id: string
+  twitch_username: string
+  plan: string
+  widget_token: string
+}
+
 interface Message {
   id: number
   user: string
@@ -41,6 +48,16 @@ export default function Dashboard() {
   const [input, setInput] = useState('')
   const [channel, setChannel] = useState('demo')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(u => {
+      if (u) {
+        setSessionUser(u)
+        setChannel(u.twitch_username)
+      }
+    })
+  }, [])
   const feedRef = useRef<HTMLDivElement>(null)
   const msgIdRef = useRef(0)
   const batchRef = useRef<string[]>([])
@@ -105,13 +122,31 @@ export default function Dashboard() {
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold text-purple-400">🔥 HeatChat</Link>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2">
-            <span className="text-gray-400 text-sm">Channel:</span>
-            <span className="text-white font-mono text-sm">#{channel}</span>
-          </div>
-          <Link href={`/widget/${channel}`} target="_blank" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-            OBS Widget ↗
-          </Link>
+          {sessionUser ? (
+            <>
+              <span className="text-gray-400 text-sm">#{sessionUser.twitch_username}</span>
+              <span className="bg-purple-900/40 text-purple-300 text-xs px-2 py-1 rounded-full">{sessionUser.plan}</span>
+              <Link href={`/widget/${sessionUser.widget_token}`} target="_blank" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                OBS Widget ↗
+              </Link>
+              <a href="/api/auth/logout" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Déconnexion
+              </a>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2">
+                <span className="text-gray-400 text-sm">Channel:</span>
+                <span className="text-white font-mono text-sm">#{channel}</span>
+              </div>
+              <Link href={`/widget/${channel}`} target="_blank" className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                OBS Widget ↗
+              </Link>
+              <a href="/api/auth/twitch" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                Connexion Twitch
+              </a>
+            </>
+          )}
         </div>
       </nav>
 

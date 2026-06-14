@@ -15,11 +15,12 @@ export default function Home() {
           AI-powered chat analytics for Twitch streamers. Get real-time hype scores, engagement metrics, and toxicity alerts — directly in OBS.
         </p>
         <div className="flex gap-4 flex-wrap justify-center">
-          <Link href="/dashboard" className="bg-purple-600 hover:bg-purple-500 text-white font-semibold px-8 py-4 rounded-xl transition-colors">
-            Try Dashboard →
-          </Link>
+          <a href="/api/auth/twitch" className="flex items-center gap-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold px-8 py-4 rounded-xl transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+            Se connecter avec Twitch
+          </a>
           <a href="#pricing" className="border border-gray-700 hover:border-gray-500 text-gray-300 font-semibold px-8 py-4 rounded-xl transition-colors">
-            See Pricing
+            Voir les prix
           </a>
         </div>
       </section>
