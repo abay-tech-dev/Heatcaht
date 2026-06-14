@@ -91,7 +91,10 @@ export default function Dashboard() {
         })
         if (res.ok) {
           const data = await res.json()
-          setAnalysis(data)
+          console.log('Groq response:', data)
+          if (data.hypeScore !== undefined) {
+            setAnalysis(data)
+          }
         }
       } catch {
         // API not configured yet, keep demo scores
