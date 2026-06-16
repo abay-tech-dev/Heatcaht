@@ -6,10 +6,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Token requis' }, { status: 400 })
   }
 
-  const { supabase } = await import('@/lib/supabase')
+  const { supabaseAdmin } = await import('@/lib/supabase')
 
   // Récupère l'user par son widget_token
-  const { data: user } = await supabase
+  const { data: user } = await supabaseAdmin
     .from('users')
     .select('id')
     .eq('widget_token', token)
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Récupère le dernier score
-  const { data: score } = await supabase
+  const { data: score } = await supabaseAdmin
     .from('scores')
     .select('hype_score, engagement_score, toxicity_score, summary, top_emotes, recorded_at')
     .eq('user_id', user.id)
