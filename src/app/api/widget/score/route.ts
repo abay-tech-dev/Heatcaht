@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
   // Si le dernier score date de plus de 60s → chat inactif, retour à 0
   const age = Date.now() - new Date(score.recorded_at).getTime()
-  if (age > 60_000) {
+  if (age > 10_000) {
     return NextResponse.json({
       hypeScore: 0,
       engagementScore: 0,
