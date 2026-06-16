@@ -1,25 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 
-export default function Widget({ params }: { params: { id: string } }) {
+export default function Widget({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [hype, setHype] = useState(0)
   const [prevHype, setPrevHype] = useState(0)
   const [emotes, setEmotes] = useState<string[]>([])
   const [particles, setParticles] = useState<{ id: number; x: number; y: number }[]>([])
   const [pulse, setPulse] = useState(false)
-  const [ready, setReady] = useState(false)
 
-  // Récupère les vrais scores depuis Supabase toutes les 10 secondes
   useEffect(() => {
+    if (!id || id === 'undefined' || id === 'demo') return
+
     async function fetchScore() {
       try {
-        if (!params.id || params.id === 'undefined' || params.id === 'demo') return
-        const res = await fetch(`/api/widget/score?token=${params.id}`)
+        const res = await fetch(`/api/widget/score?token=${id}`, { cache: 'no-store' })
         if (!res.ok) return
         const data = await res.json()
         const newHype = data.hypeScore ?? 0
-        setPrevHype((prev) => {
+        setHype((prev) => {
           if (newHype > prev + 3) {
             setPulse(true)
             setTimeout(() => setPulse(false), 600)
@@ -28,17 +28,17 @@ export default function Widget({ params }: { params: { id: string } }) {
               { id: Date.now(), x: Math.random() * 180, y: Math.random() * 40 },
             ])
           }
-          return prev
+          setPrevHype(prev)
+          return newHype
         })
-        setHype(newHype)
         setEmotes(data.topEmotes ?? [])
-        setReady(true)
       } catch {}
     }
+
     fetchScore()
     const interval = setInterval(fetchScore, 5000)
     return () => clearInterval(interval)
-  }, [params.id])
+  }, [id])
 
   useEffect(() => {
     if (particles.length === 0) return
@@ -111,11 +111,11 @@ export default function Widget({ params }: { params: { id: string } }) {
           <div style={{ paddingBottom: 8 }}>
             <div style={{ color: '#64748b', fontSize: 11, fontWeight: 600 }}>/100</div>
             <div style={{
-              color: hype > prevHype ? '#22c55e' : '#ef4444',
+              color: hype > prevHype ? '#22c55e' : hype < prevHype ? '#ef4444' : '#64748b',
               fontSize: 11, fontWeight: 700,
               transition: 'color 0.3s',
             }}>
-              {hype > prevHype ? '▲' : '▼'} {Math.abs(hype - prevHype)}
+              {hype > prevHype ? '▲' : hype < prevHype ? '▼' : '–'} {Math.abs(hype - prevHype)}
             </div>
           </div>
 
@@ -145,7 +145,7 @@ export default function Widget({ params }: { params: { id: string } }) {
 
         {/* Emotes */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {emotes.map((e, i) => (
+          {emotes.map((e) => (
             <span key={e} style={{
               backgroundColor: `${neonColor}18`,
               border: `1px solid ${neonColor}44`,
