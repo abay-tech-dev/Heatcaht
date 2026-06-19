@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import LiveDemo from '@/components/LiveDemo'
 
 async function handleCheckout(plan: string) {
   const res = await fetch('/api/stripe/checkout', {
@@ -82,6 +83,27 @@ export default function Home() {
             See pricing
           </a>
         </div>
+      </section>
+
+      {/* Live Demo */}
+      <section style={{ padding: '4rem 1rem 6rem', maxWidth: '64rem', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <span style={{
+            display: 'inline-block',
+            backgroundColor: 'rgba(145,71,255,0.15)',
+            border: '1px solid rgba(145,71,255,0.4)',
+            borderRadius: '9999px', padding: '0.3rem 0.9rem',
+            fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em',
+            color: '#bf94ff', textTransform: 'uppercase', marginBottom: '1rem',
+          }}>Live Preview</span>
+          <h2 style={{ fontSize: '1.875rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.75rem' }}>
+            See it in action
+          </h2>
+          <p style={{ color: '#adadb8', fontSize: '1rem' }}>
+            Real-time hype detection — watch the bar explode when the chat goes wild.
+          </p>
+        </div>
+        <LiveDemo />
       </section>
 
       {/* Features */}
