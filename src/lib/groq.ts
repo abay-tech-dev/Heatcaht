@@ -16,7 +16,7 @@ const TOXIC_KEYWORDS = ['trash', 'bad', 'noob', 'terrible', 'worst', 'hate', 'st
 
 function heuristicAnalysis(messages: string[]): ChatAnalysis {
   if (messages.length === 0) {
-    return { hypeScore: 0, engagementScore: 0, toxicityScore: 0, summary: 'Aucun message.', topEmotes: [] }
+    return { hypeScore: 0, engagementScore: 0, toxicityScore: 0, summary: 'No messages.', topEmotes: [] }
   }
 
   const texts = messages.map(m => m.toLowerCase())
@@ -65,10 +65,10 @@ function heuristicAnalysis(messages: string[]): ChatAnalysis {
   const toxicityScore = Math.min(100, Math.round(toxicHits * 80))
 
   const summary = hypeScore >= 70
-    ? `Chat en feu ! ${total} messages avec beaucoup d'hype.`
+    ? `Chat on fire! ${total} messages with a lot of hype.`
     : hypeScore >= 40
-    ? `Chat actif avec ${total} messages.`
-    : `Chat calme — ${total} messages reçus.`
+    ? `Active chat with ${total} messages.`
+    : `Quiet chat — ${total} messages received.`
 
   return { hypeScore, engagementScore, toxicityScore, summary, topEmotes }
 }
@@ -98,7 +98,7 @@ Return ONLY a JSON object with:
 - hypeScore (integer 0-100)
 - engagementScore (integer 0-100)
 - toxicityScore (integer 0-100)
-- summary (1 short sentence in French)
+- summary (1 short sentence in English)
 - topEmotes (array of 3 most used words/emotes in UPPERCASE)`
 
   try {
