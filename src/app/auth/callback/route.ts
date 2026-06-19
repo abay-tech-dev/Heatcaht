@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
 import { supabaseAdmin } from '@/lib/supabase'
 import { createSession, COOKIE_NAME } from '@/lib/session'
 import crypto from 'crypto'
@@ -12,14 +12,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=no_code`)
   }
 
-  const supabase = createClient(
+  const response = NextResponse.redirect(`${origin}/dashboard`)
+
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { flowType: 'pkce' } }
+    {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
   )
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
   if (error || !data.session) {
+    console.error('OAuth error:', error?.message)
     return NextResponse.redirect(`${origin}/login?error=oauth_failed`)
   }
 
@@ -29,7 +41,7 @@ export async function GET(req: NextRequest) {
   const email = user.email ?? ''
   const providerToken = session.provider_token ?? ''
 
-  // Upsert user — preserve widget_token on re-login
+  // Preserve existing widget_token on re-login
   const { data: existing } = await supabaseAdmin
     .from('users')
     .select('id, widget_token, plan')
@@ -73,7 +85,6 @@ export async function GET(req: NextRequest) {
     widget_token: dbUser.widget_token,
   })
 
-  const response = NextResponse.redirect(`${origin}/dashboard`)
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
