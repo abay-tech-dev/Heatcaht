@@ -206,6 +206,16 @@ export default function Home() {
 
       {/* Footer */}
       <footer style={{ textAlign: 'center', padding: '2rem 1rem 3rem', color: '#adadb8', fontSize: '0.875rem' }}>
+        <div style={{ marginBottom: '0.75rem' }}>
+          <a href="/contact" style={{ color: '#adadb8', textDecoration: 'none', marginRight: '1.5rem' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#9147ff')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#adadb8')}
+          >Contact</a>
+          <a href="/register" style={{ color: '#adadb8', textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#9147ff')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#adadb8')}
+          >Créer un compte</a>
+        </div>
         © 2024 HeatChat
       </footer>
     </main>
