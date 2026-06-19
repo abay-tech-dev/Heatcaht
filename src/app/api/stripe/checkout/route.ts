@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
 
   const user = await getSession()
 
-  // Si connecté → on attache le customer Stripe à son compte
   let customerId: string | undefined
   if (user) {
     const { data: dbUser } = await supabaseAdmin
@@ -37,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   const session = await stripe.checkout.sessions.create({
     ...(customerId ? { customer: customerId } : {}),
-    mode: 'subscription',
+    mode: 'payment',
     payment_method_types: ['card'],
     line_items: [{ price: planConfig.priceId, quantity: 1 }],
     success_url: `${process.env.NEXTAUTH_URL}/dashboard?success=true`,

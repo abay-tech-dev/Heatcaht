@@ -5,22 +5,10 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 })
 
 export const PLANS = {
-  starter: {
-    name: 'Starter',
-    price: 9,
-    priceId: process.env.STRIPE_STARTER_PRICE_ID!,
-    features: ['1 channel', 'Basic analytics', 'OBS widget'],
-  },
-  pro: {
-    name: 'Pro',
-    price: 19,
-    priceId: process.env.STRIPE_PRO_PRICE_ID!,
-    features: ['5 channels', 'AI analysis', 'Custom widget', 'Discord alerts'],
-  },
-  agency: {
-    name: 'Agency',
-    price: 49,
-    priceId: process.env.STRIPE_AGENCY_PRICE_ID!,
-    features: ['Unlimited channels', 'Full API access', 'White label', 'Priority support'],
+  beta: {
+    name: 'Accès Bêta',
+    price: 4,
+    priceId: process.env.STRIPE_BETA_PRICE_ID!,
+    features: ['Widget OBS temps réel', 'Score de hype IA', 'Détection de toxicité', 'Accès à vie au prix bêta'],
   },
 }
