@@ -66,15 +66,6 @@ export default function Dashboard() {
   const msgIdRef = useRef(0)
   const batchRef = useRef<string[]>([])
 
-  // Demo mode only when not logged in and not live
-  useEffect(() => {
-    if (isLive || sessionUser) return
-    const interval = setInterval(() => {
-      const demo = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)]
-      addMessage(demo.user, demo.text)
-    }, 1500)
-    return () => clearInterval(interval)
-  }, [isLive, sessionUser])
 
   // Analyze batch every 5 seconds
   useEffect(() => {
@@ -273,7 +264,7 @@ export default function Dashboard() {
             <span className="text-xs text-gray-500">{messages.length} messages</span>
           </div>
           <div ref={feedRef} className="flex-1 overflow-y-auto p-4 space-y-2">
-            {messages.length === 0 && sessionUser && !isLive && (
+            {messages.length === 0 && !isLive && (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
                 <div className="text-4xl">💬</div>
                 <p className="text-gray-400 text-sm font-medium">Connect your Twitch channel to see the chat live</p>
