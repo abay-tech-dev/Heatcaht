@@ -71,16 +71,18 @@ function heuristicAnalysis(messages: string[]): ChatAnalysis {
   // 0 msg = 0, 10 msg = 0.2, 20 = 0.45, 30 = 0.65, 50 = 0.85, 80+ = 1.0
   const volumeFactor = Math.min(Math.pow(total / 80, 0.6), 1)
 
-  // --- Raw hype signal (0-100 before modifiers) ---
-  const rawSignal = (capsRatio * 20 + exclamRatio * 15 + hypeHits * 30 + emoteHits * 20) * 100
+  // --- Raw hype signal (0 to ~85 max, never naturally hits 100) ---
+  // Each component is a ratio 0-1, weights sum to 85
+  const rawSignal = capsRatio * 20 + exclamRatio * 15 + hypeHits * 30 + emoteHits * 20
 
   // --- Apply all modifiers ---
-  const hypeScore = Math.min(100, Math.round(
+  // volumeFactor alone caps score: 10 msgs → ×0.18, 30 → ×0.42, 60 → ×0.72, 120+ → ×1.0
+  const hypeScore = Math.min(95, Math.round(
     rawSignal
-    * volumeFactor       // needs volume
-    * spamPenalty        // punish spam
-    * qualityFactor      // punish single-word floods
-    * (0.6 + diversityBonus * 0.4) // reward diverse users
+    * volumeFactor
+    * spamPenalty
+    * qualityFactor
+    * (0.5 + diversityBonus * 0.5)
   ))
 
   const engagementScore = Math.min(100, Math.round(
@@ -146,10 +148,10 @@ Return ONLY a JSON object:
     const text = completion.choices[0].message.content ?? '{}'
     const parsed = JSON.parse(text)
 
-    // Weight heuristic more heavily (70%) to prevent AI inflation
+    // Heuristic dominates (80%) — AI tends to inflate scores
     return {
-      hypeScore: Math.round(Number(parsed.hypeScore) * 0.3 + heuristic.hypeScore * 0.7) || heuristic.hypeScore,
-      engagementScore: Math.round(Number(parsed.engagementScore) * 0.3 + heuristic.engagementScore * 0.7) || heuristic.engagementScore,
+      hypeScore: Math.min(95, Math.round(Number(parsed.hypeScore) * 0.2 + heuristic.hypeScore * 0.8)) || heuristic.hypeScore,
+      engagementScore: Math.min(95, Math.round(Number(parsed.engagementScore) * 0.2 + heuristic.engagementScore * 0.8)) || heuristic.engagementScore,
       toxicityScore: Math.round(Number(parsed.toxicityScore) * 0.5 + heuristic.toxicityScore * 0.5) || heuristic.toxicityScore,
       summary: parsed.summary || heuristic.summary,
       topEmotes: Array.isArray(parsed.topEmotes) ? parsed.topEmotes : heuristic.topEmotes,
