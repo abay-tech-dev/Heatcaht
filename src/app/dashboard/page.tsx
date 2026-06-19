@@ -93,7 +93,7 @@ export default function Dashboard() {
       } finally {
         setIsAnalyzing(false)
       }
-    }, 5000)
+    }, 2000)
     return () => clearInterval(interval)
   }, [])
 

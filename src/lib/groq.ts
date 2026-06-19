@@ -10,8 +10,8 @@ export interface ChatAnalysis {
   topEmotes: string[]
 }
 
-const HYPE_KEYWORDS = ['pog', 'poggers', 'lets go', 'letsgo', 'gg', 'w', 'winning', 'goat', 'cracked', 'insane', 'crazy', 'fire', 'based', 'hyped', 'hype', 'go', 'wow', 'omg', 'yes', 'yess', 'lesgo', 'lfg', 'clutch', 'ez']
-const HYPE_EMOTES = ['poggers', 'pog', 'pogu', 'pepelaugh', 'lul', 'lulw', 'kekw', 'omegalul', 'pepehands', 'monkas', 'widepeeposad', 'peeposad', 'clap', 'peepoClap', '5head', 'pepega']
+const HYPE_KEYWORDS = ['pog', 'poggers', 'lets go', 'letsgo', 'gg', 'winning', 'goat', 'cracked', 'insane', 'crazy', 'fire', 'hyped', 'hype', 'omg', 'lesgo', 'lfg', 'clutch', 'incredible', 'unreal', 'beast']
+const HYPE_EMOTES = ['poggers', 'pog', 'pogu', 'pepelaugh', 'lul', 'lulw', 'kekw', 'omegalul', 'clap', 'peepoClap']
 const TOXIC_KEYWORDS = ['trash', 'bad', 'noob', 'terrible', 'worst', 'hate', 'stupid', 'idiot', 'kys', 'die', 'garbage', 'awful']
 
 function heuristicAnalysis(messages: string[]): ChatAnalysis {
@@ -19,29 +19,43 @@ function heuristicAnalysis(messages: string[]): ChatAnalysis {
     return { hypeScore: 0, engagementScore: 0, toxicityScore: 0, summary: 'No messages.', topEmotes: [] }
   }
 
-  const texts = messages.map(m => m.toLowerCase())
+  const texts = messages.map(m => m.toLowerCase().trim())
   const total = messages.length
 
-  // Caps ratio — beaucoup de majuscules = hype
+  // --- Anti-spam: ratio of unique messages vs total ---
+  const uniqueMessages = new Set(texts).size
+  const spamRatio = 1 - (uniqueMessages / total) // 0 = all unique, 1 = all duplicates
+  const spamPenalty = Math.max(0, 1 - spamRatio * 1.5) // heavy penalty for spam
+
+  // --- User diversity (parsed from "user: text" format) ---
+  const users = messages.map(m => m.split(':')[0]?.trim()).filter(Boolean)
+  const uniqueUsers = new Set(users).size
+  const diversityBonus = Math.min(uniqueUsers / Math.max(total * 0.6, 1), 1) // reward diverse users
+
+  // --- Message quality: average length (spammy = short) ---
+  const avgLength = messages.reduce((acc, m) => acc + m.length, 0) / total
+  const qualityFactor = Math.min(avgLength / 30, 1) // penalize very short messages
+
+  // --- Caps ratio ---
   const capsRatio = messages.reduce((acc, m) => {
     const letters = m.replace(/[^a-zA-Z]/g, '')
     if (letters.length === 0) return acc
     return acc + (m.replace(/[^A-Z]/g, '').length / letters.length)
   }, 0) / total
 
-  // Exclamations
+  // --- Exclamations ---
   const exclamRatio = messages.filter(m => m.includes('!')).length / total
 
-  // Hype keywords
+  // --- Hype keywords ---
   const hypeHits = texts.filter(m => HYPE_KEYWORDS.some(k => m.includes(k))).length / total
 
-  // Hype emotes
+  // --- Hype emotes ---
   const emoteHits = texts.filter(m => HYPE_EMOTES.some(e => m.includes(e))).length / total
 
-  // Toxicité
+  // --- Toxicity ---
   const toxicHits = texts.filter(m => TOXIC_KEYWORDS.some(k => m.includes(k))).length / total
 
-  // Compte les mots/emotes récurrents
+  // --- Top words ---
   const wordCount: Record<string, number> = {}
   texts.forEach(m => {
     m.split(/\s+/).forEach(w => {
@@ -53,48 +67,68 @@ function heuristicAnalysis(messages: string[]): ChatAnalysis {
     .slice(0, 3)
     .map(([w]) => w.toUpperCase())
 
-  // Volume bonus — plus il y a de messages, plus c'est engagé
-  const volumeBonus = Math.min(total / 30, 1) * 20
+  // --- Volume: need real volume to score high ---
+  // 0 msg = 0, 10 msg = 0.2, 20 = 0.45, 30 = 0.65, 50 = 0.85, 80+ = 1.0
+  const volumeFactor = Math.min(Math.pow(total / 80, 0.6), 1)
 
-  // Score brut — divisé par 2 pour éviter de monter trop vite
-  const rawHype = (capsRatio * 15 + exclamRatio * 15 + hypeHits * 25 + emoteHits * 15) * 100
-  // Pénalité si peu de messages
-  const volumePenalty = total < 3 ? 0.1 : total < 5 ? 0.3 : total < 10 ? 0.6 : 1
-  const hypeScore = Math.min(100, Math.round(rawHype * volumePenalty + volumeBonus * 0.5))
-  const engagementScore = Math.min(100, Math.round(volumeBonus * 2 + hypeScore * 0.2))
-  const toxicityScore = Math.min(100, Math.round(toxicHits * 80))
+  // --- Raw hype signal (0-100 before modifiers) ---
+  const rawSignal = (capsRatio * 20 + exclamRatio * 15 + hypeHits * 30 + emoteHits * 20) * 100
+
+  // --- Apply all modifiers ---
+  const hypeScore = Math.min(100, Math.round(
+    rawSignal
+    * volumeFactor       // needs volume
+    * spamPenalty        // punish spam
+    * qualityFactor      // punish single-word floods
+    * (0.6 + diversityBonus * 0.4) // reward diverse users
+  ))
+
+  const engagementScore = Math.min(100, Math.round(
+    volumeFactor * 60 + diversityBonus * 40
+  ))
+
+  const toxicityScore = Math.min(100, Math.round(toxicHits * 100))
 
   const summary = hypeScore >= 70
-    ? `Chat on fire! ${total} messages with a lot of hype.`
+    ? `Chat on fire! ${total} messages, high energy.`
     : hypeScore >= 40
-    ? `Active chat with ${total} messages.`
+    ? `Active chat — ${total} messages, good engagement.`
     : `Quiet chat — ${total} messages received.`
 
   return { hypeScore, engagementScore, toxicityScore, summary, topEmotes }
 }
 
 export async function analyzeChat(messages: string[]): Promise<ChatAnalysis> {
-  // Moins de 8 messages → heuristique pure (pas besoin d'IA)
-  if (messages.length < 8) {
+  if (messages.length < 15) {
     return heuristicAnalysis(messages)
   }
 
-  const sample = messages.slice(-50)
+  const sample = messages.slice(-80)
   const heuristic = heuristicAnalysis(sample)
   const capsCount = sample.filter(m => {
     const letters = m.replace(/[^a-zA-Z]/g, '')
     return letters.length > 0 && m.replace(/[^A-Z]/g, '').length / letters.length > 0.3
   }).length
   const exclamCount = sample.filter(m => m.includes('!')).length
+  const uniqueCount = new Set(sample.map(m => m.toLowerCase().trim())).size
 
-  const prompt = `You are analyzing a Twitch chat. Here are ${sample.length} messages:
+  const prompt = `You are analyzing a Twitch chat with ${sample.length} messages. Be strict and realistic.
+
+Messages:
 ${sample.join('\n')}
 
-Context clues:
-- High caps in ${Math.round(capsCount / sample.length * 100)}% of messages
-- Exclamation marks in ${Math.round(exclamCount / sample.length * 100)}% of messages
+Context:
+- ${Math.round(capsCount / sample.length * 100)}% of messages have high caps
+- ${Math.round(exclamCount / sample.length * 100)}% have exclamation marks
+- ${uniqueCount} unique messages out of ${sample.length} (spam ratio: ${Math.round((1 - uniqueCount/sample.length)*100)}%)
 
-Return ONLY a JSON object with:
+Scoring rules:
+- hypeScore: needs VOLUME + DIVERSITY + QUALITY. Single keyword bursts = low score. 100 = massive engaged crowd going wild.
+- engagementScore: based on message count and user diversity.
+- toxicityScore: based on toxic keywords.
+- Do NOT give high scores for low volume or repetitive spam.
+
+Return ONLY a JSON object:
 - hypeScore (integer 0-100)
 - engagementScore (integer 0-100)
 - toxicityScore (integer 0-100)
@@ -112,11 +146,11 @@ Return ONLY a JSON object with:
     const text = completion.choices[0].message.content ?? '{}'
     const parsed = JSON.parse(text)
 
-    // Mixe heuristique + IA pour plus de précision
+    // Weight heuristic more heavily (70%) to prevent AI inflation
     return {
-      hypeScore: Math.round((Number(parsed.hypeScore) + heuristic.hypeScore) / 2) || heuristic.hypeScore,
-      engagementScore: Math.round((Number(parsed.engagementScore) + heuristic.engagementScore) / 2) || heuristic.engagementScore,
-      toxicityScore: Math.round((Number(parsed.toxicityScore) + heuristic.toxicityScore) / 2) || heuristic.toxicityScore,
+      hypeScore: Math.round(Number(parsed.hypeScore) * 0.3 + heuristic.hypeScore * 0.7) || heuristic.hypeScore,
+      engagementScore: Math.round(Number(parsed.engagementScore) * 0.3 + heuristic.engagementScore * 0.7) || heuristic.engagementScore,
+      toxicityScore: Math.round(Number(parsed.toxicityScore) * 0.5 + heuristic.toxicityScore * 0.5) || heuristic.toxicityScore,
       summary: parsed.summary || heuristic.summary,
       topEmotes: Array.isArray(parsed.topEmotes) ? parsed.topEmotes : heuristic.topEmotes,
     }
