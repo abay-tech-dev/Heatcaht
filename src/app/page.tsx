@@ -27,7 +27,7 @@ export default function Home() {
           marginBottom: '1.5rem', fontSize: '0.875rem', color: '#bf94ff',
           fontWeight: 600, letterSpacing: '0.02em'
         }}>
-          🔥 Accès Bêta Limité
+          🔥 Limited Beta Access
         </div>
 
         <h1 style={{
@@ -45,7 +45,7 @@ export default function Home() {
         </h1>
 
         <p style={{ fontSize: '1.125rem', color: '#adadb8', maxWidth: '38rem', marginBottom: '2.5rem', lineHeight: 1.7 }}>
-          Analytics IA en temps réel pour streamers Twitch. Score de hype, engagement, toxicité — directement dans OBS.
+          Real-time AI analytics for Twitch streamers. Hype score, engagement, toxicity — directly in OBS.
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -63,7 +63,7 @@ export default function Home() {
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#772ce8')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#9147ff')}
           >
-            Essayer gratuitement →
+            Try for free →
           </Link>
           <a href="#pricing" style={{
             border: '1px solid #2a2a35',
@@ -79,7 +79,7 @@ export default function Home() {
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#9147ff'; e.currentTarget.style.color = '#ffffff' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a35'; e.currentTarget.style.color = '#adadb8' }}
           >
-            Voir l&apos;offre
+            See pricing
           </a>
         </div>
       </section>
@@ -87,13 +87,13 @@ export default function Home() {
       {/* Features */}
       <section style={{ padding: '6rem 1rem', maxWidth: '72rem', margin: '0 auto' }}>
         <h2 style={{ fontSize: '1.875rem', fontWeight: 700, textAlign: 'center', marginBottom: '4rem', color: '#ffffff' }}>
-          Tout ce qu&apos;il vous faut pour comprendre votre chat
+          Everything you need to understand your chat
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(18rem, 1fr))', gap: '1.5rem' }}>
           {[
-            { icon: '🔥', title: 'Hype Score', desc: "L'IA détecte quand votre chat s'emballe — même avec le sarcasme et le contexte." },
-            { icon: '🎯', title: 'Widget OBS', desc: "Widget drag & drop qui fonctionne dans n'importe quelle scène OBS. Vos viewers voient la chaleur." },
-            { icon: '🛡️', title: 'Alertes Toxicité', desc: 'Soyez alerté avant que les choses dégénèrent. Protégez votre communauté.' },
+            { icon: '🔥', title: 'Hype Score', desc: "AI detects when your chat goes wild — even with sarcasm and context." },
+            { icon: '🎯', title: 'OBS Widget', desc: "Drag & drop widget that works in any OBS scene. Your viewers see the heat." },
+            { icon: '🛡️', title: 'Toxicity Alerts', desc: 'Get alerted before things escalate. Protect your community.' },
           ].map((f) => (
             <div key={f.title} style={{
               backgroundColor: '#18181b',
@@ -116,10 +116,10 @@ export default function Home() {
       {/* Pricing */}
       <section id="pricing" style={{ padding: '6rem 1rem', maxWidth: '36rem', margin: '0 auto', textAlign: 'center' }}>
         <h2 style={{ fontSize: '1.875rem', fontWeight: 700, marginBottom: '0.75rem', color: '#ffffff' }}>
-          Une offre simple
+          Simple pricing
         </h2>
         <p style={{ color: '#adadb8', marginBottom: '3rem', fontSize: '1rem' }}>
-          Accès complet, une seule fois, pour toujours.
+          Full access, once, forever.
         </p>
 
         <div style={{
@@ -150,24 +150,24 @@ export default function Home() {
             border: '1px solid rgba(145, 71, 255, 0.4)',
             marginBottom: '1.5rem',
           }}>
-            Offre limitée
+            Limited offer
           </div>
 
           <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.5rem' }}>
-            Accès Bêta
+            Beta Access
           </h3>
 
           <div style={{ margin: '1.5rem 0', lineHeight: 1 }}>
             <span style={{ fontSize: '3.5rem', fontWeight: 800, color: '#ffffff' }}>$4</span>
-            <span style={{ color: '#adadb8', fontSize: '1rem', marginLeft: '0.4rem' }}>paiement unique</span>
+            <span style={{ color: '#adadb8', fontSize: '1rem', marginLeft: '0.4rem' }}>one-time payment</span>
           </div>
 
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0', textAlign: 'left' }}>
             {[
-              'Widget OBS temps réel',
-              'Score de hype IA',
-              'Détection de toxicité',
-              'Accès à vie au prix bêta',
+              'Real-time OBS widget',
+              'AI hype score',
+              'Toxicity detection',
+              'Lifetime access at beta price',
             ].map((feature) => (
               <li key={feature} style={{
                 display: 'flex', alignItems: 'center', gap: '0.6rem',
@@ -199,7 +199,7 @@ export default function Home() {
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#772ce8'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#9147ff'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)' }}
           >
-            Obtenir l&apos;accès bêta →
+            Get beta access →
           </button>
         </div>
       </section>
@@ -214,7 +214,7 @@ export default function Home() {
           <a href="/register" style={{ color: '#adadb8', textDecoration: 'none' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#9147ff')}
             onMouseLeave={e => (e.currentTarget.style.color = '#adadb8')}
-          >Créer un compte</a>
+          >Create account</a>
         </div>
         © 2024 HeatChat
       </footer>

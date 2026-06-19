@@ -42,7 +42,7 @@ export default function Dashboard() {
     hypeScore: 0,
     engagementScore: 0,
     toxicityScore: 0,
-    summary: 'En attente de l\'analyse...',
+    summary: 'Waiting for analysis...',
     topEmotes: [],
   })
   const [input, setInput] = useState('')
@@ -177,7 +177,7 @@ export default function Dashboard() {
                 OBS Widget ↗
               </Link>
               <a href="/api/auth/logout" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Déconnexion
+                Log out
               </a>
             </>
           ) : (
@@ -190,7 +190,7 @@ export default function Dashboard() {
                 OBS Widget ↗
               </Link>
               <a href="/api/auth/twitch" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-                Connexion Twitch
+                Connect Twitch
               </a>
             </>
           )}
@@ -204,7 +204,7 @@ export default function Dashboard() {
           <input
             value={channelInput}
             onChange={e => setChannelInput(e.target.value)}
-            placeholder="pseudo twitch"
+            placeholder="twitch username"
             className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-gray-500 outline-none focus:border-purple-500"
           />
         </div>
@@ -215,7 +215,7 @@ export default function Dashboard() {
           </button>
         ) : (
           <button onClick={connectTwitch} disabled={!channelInput.trim()} className="bg-green-600 hover:bg-green-500 disabled:opacity-40 px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors">
-            ▶ Connecter le chat
+            ▶ Connect chat
           </button>
         )}
         {isLive && (

@@ -14,10 +14,10 @@ export default function Contact() {
       }}>
         <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>💬</div>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.75rem', color: '#ffffff' }}>
-          Nous contacter
+          Contact us
         </h1>
         <p style={{ color: '#adadb8', lineHeight: 1.7, marginBottom: '2rem' }}>
-          Un problème avec le widget, votre compte ou votre paiement ? Écrivez-nous directement, on répond rapidement.
+          An issue with the widget, your account, or your payment? Write to us directly, we respond quickly.
         </p>
 
         <a
@@ -42,7 +42,7 @@ export default function Contact() {
 
         <div style={{ borderTop: '1px solid #2a2a35', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
           <p style={{ color: '#adadb8', fontSize: '0.875rem', lineHeight: 1.6 }}>
-            Temps de réponse habituel : <strong style={{ color: '#efeff1' }}>moins de 24h</strong>
+            Usual response time: <strong style={{ color: '#efeff1' }}>under 24h</strong>
           </p>
         </div>
       </div>
@@ -51,7 +51,7 @@ export default function Contact() {
         onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
         onMouseLeave={e => (e.currentTarget.style.color = '#adadb8')}
       >
-        ← Retour à l&apos;accueil
+        ← Back to home
       </a>
     </main>
   )

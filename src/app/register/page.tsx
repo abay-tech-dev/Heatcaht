@@ -38,7 +38,7 @@ export default function Register() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-purple-400">🔥 HeatChat</Link>
-          <p className="text-gray-400 mt-2">Crée ton compte streamer</p>
+          <p className="text-gray-400 mt-2">Create your streamer account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-gray-900 rounded-2xl p-8 border border-gray-800 space-y-5">
@@ -49,7 +49,7 @@ export default function Register() {
           )}
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Pseudo Twitch</label>
+            <label className="block text-sm text-gray-400 mb-2">Twitch Username</label>
             <div className="relative">
               <span className="absolute left-4 top-3 text-gray-500">#</span>
               <input
@@ -58,7 +58,7 @@ export default function Register() {
                 onChange={e => setTwitchUsername(e.target.value)}
                 required
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 outline-none focus:border-purple-500"
-                placeholder="tonpseudo"
+                placeholder="yourusername"
               />
             </div>
           </div>
@@ -71,12 +71,12 @@ export default function Register() {
               onChange={e => setEmail(e.target.value)}
               required
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-purple-500"
-              placeholder="ton@email.com"
+              placeholder="your@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Mot de passe</label>
+            <label className="block text-sm text-gray-400 mb-2">Password</label>
             <input
               type="password"
               value={password}
@@ -84,7 +84,7 @@ export default function Register() {
               required
               minLength={8}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-purple-500"
-              placeholder="8 caractères minimum"
+              placeholder="8 characters minimum"
             />
           </div>
 
@@ -93,13 +93,13 @@ export default function Register() {
             disabled={loading}
             className="w-full bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors"
           >
-            {loading ? 'Création...' : 'Créer mon compte'}
+            {loading ? 'Creating...' : 'Create my account'}
           </button>
 
           <p className="text-center text-gray-400 text-sm">
-            Déjà un compte ?{' '}
+            Already have an account?{' '}
             <Link href="/login" className="text-purple-400 hover:text-purple-300">
-              Se connecter
+              Log in
             </Link>
           </p>
         </form>

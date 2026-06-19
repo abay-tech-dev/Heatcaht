@@ -37,7 +37,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-purple-400">🔥 HeatChat</Link>
-          <p className="text-gray-400 mt-2">Connecte-toi à ton compte</p>
+          <p className="text-gray-400 mt-2">Log in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-gray-900 rounded-2xl p-8 border border-gray-800 space-y-5">
@@ -55,12 +55,12 @@ export default function Login() {
               onChange={e => setEmail(e.target.value)}
               required
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-purple-500"
-              placeholder="ton@email.com"
+              placeholder="your@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Mot de passe</label>
+            <label className="block text-sm text-gray-400 mb-2">Password</label>
             <input
               type="password"
               value={password}
@@ -76,13 +76,13 @@ export default function Login() {
             disabled={loading}
             className="w-full bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors"
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? 'Logging in...' : 'Log in'}
           </button>
 
           <p className="text-center text-gray-400 text-sm">
-            Pas encore de compte ?{' '}
+            No account yet?{' '}
             <Link href="/register" className="text-purple-400 hover:text-purple-300">
-              Créer un compte
+              Create account
             </Link>
           </p>
         </form>
