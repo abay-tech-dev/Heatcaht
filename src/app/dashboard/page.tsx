@@ -197,6 +197,22 @@ export default function Dashboard() {
               <Link href="/rush" className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
                 ✂️ Rush
               </Link>
+              <button
+                onClick={async () => {
+                  setClipCreating(true)
+                  await fetch('/api/clips', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ hype_score: analysis.hypeScore }),
+                  })
+                  setClipCreating(false)
+                }}
+                disabled={clipCreating}
+                className="bg-yellow-600 hover:bg-yellow-500 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              >
+                {clipCreating ? '⏳ Clipping...' : '🎬 Force clip'}
+              </button>
               <Link href={`/widget/${sessionUser.widget_token}`} target="_blank" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
                 OBS Widget ↗
               </Link>
