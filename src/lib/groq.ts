@@ -32,9 +32,9 @@ function heuristicAnalysis(messages: string[]): ChatAnalysis {
   const uniqueUsers = new Set(users).size
   const diversityBonus = Math.min(uniqueUsers / Math.max(total * 0.6, 1), 1) // reward diverse users
 
-  // --- Message quality: average length (spammy = short) ---
+  // --- Message quality: average length — Twitch messages are naturally short, so threshold is low ---
   const avgLength = messages.reduce((acc, m) => acc + m.length, 0) / total
-  const qualityFactor = Math.min(avgLength / 30, 1) // penalize very short messages
+  const qualityFactor = Math.min(avgLength / 8, 1) // 8 chars = full score (KEKW = 4, "lets go" = 7)
 
   // --- Caps ratio ---
   const capsRatio = messages.reduce((acc, m) => {
