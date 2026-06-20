@@ -51,6 +51,9 @@ export default function Dashboard() {
   const [isLive, setIsLive] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null)
+  const [clipCreating, setClipCreating] = useState(false)
+  const [lastClipTime, setLastClipTime] = useState(0)
+  const hypeHighRef = useRef<number>(0) // timestamp when hype first went above 75
   const twitchClientRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
@@ -86,6 +89,27 @@ export default function Dashboard() {
           console.log('Groq response:', data)
           if (data.hypeScore !== undefined) {
             setAnalysis(data)
+
+            // Auto-clip: hype > 75 pendant 10s, max 1 clip toutes les 2 min
+            if (data.hypeScore >= 75 && sessionUser) {
+              const now = Date.now()
+              if (hypeHighRef.current === 0) hypeHighRef.current = now
+              const hypeDuration = now - hypeHighRef.current
+              const cooldown = now - lastClipTime > 120_000
+              if (hypeDuration >= 10_000 && cooldown && !clipCreating) {
+                setClipCreating(true)
+                hypeHighRef.current = 0
+                setLastClipTime(now)
+                fetch('/api/clips', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ hype_score: data.hypeScore }),
+                }).finally(() => setClipCreating(false))
+              }
+            } else {
+              hypeHighRef.current = 0
+            }
           }
         }
       } catch {
@@ -164,6 +188,15 @@ export default function Dashboard() {
             <>
               <span className="text-gray-400 text-sm">#{sessionUser.twitch_username}</span>
               <span className="bg-purple-900/40 text-purple-300 text-xs px-2 py-1 rounded-full">{sessionUser.plan}</span>
+              {clipCreating && (
+                <span className="text-yellow-400 text-xs flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                  Creating clip...
+                </span>
+              )}
+              <Link href="/rush" className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                ✂️ Rush
+              </Link>
               <Link href={`/widget/${sessionUser.widget_token}`} target="_blank" className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
                 OBS Widget ↗
               </Link>
