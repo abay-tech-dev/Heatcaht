@@ -91,12 +91,12 @@ export default function Dashboard() {
             setAnalysis(data)
 
             // Auto-clip: hype > 75 pendant 10s, max 1 clip toutes les 2 min
-            if (data.hypeScore >= 75 && sessionUser) {
+            if (data.hypeScore >= 50 && sessionUser) {
               const now = Date.now()
               if (hypeHighRef.current === 0) hypeHighRef.current = now
               const hypeDuration = now - hypeHighRef.current
               const cooldown = now - lastClipTime > 120_000
-              if (hypeDuration >= 10_000 && cooldown && !clipCreating) {
+              if (hypeDuration >= 5_000 && cooldown && !clipCreating) {
                 setClipCreating(true)
                 hypeHighRef.current = 0
                 setLastClipTime(now)
