@@ -55,6 +55,7 @@ export default function Dashboard() {
   const [lastClipTime, setLastClipTime] = useState(0)
   const hypeHighRef = useRef<number>(0) // timestamp when hype first went above 75
   const twitchClientRef = useRef<WebSocket | null>(null)
+  const streamIdRef = useRef<string | null>(null) // current tracked stream session (rush/VOD pipeline, beta)
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(u => {
@@ -82,7 +83,7 @@ export default function Dashboard() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ messages: toAnalyze }),
+          body: JSON.stringify({ messages: toAnalyze, stream_id: streamIdRef.current }),
         })
         if (res.ok) {
           const data = await res.json()
@@ -106,6 +107,17 @@ export default function Dashboard() {
                   credentials: 'include',
                   body: JSON.stringify({ hype_score: data.hypeScore }),
                 }).finally(() => setClipCreating(false))
+
+                // Also log the moment for the post-stream VOD rush pipeline (beta) —
+                // independent of the instant Twitch clip above, no Twitch token needed.
+                if (streamIdRef.current) {
+                  fetch('/api/rush/moments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ stream_id: streamIdRef.current, hype_score: data.hypeScore }),
+                  }).catch(() => {})
+                }
               }
             } else {
               hypeHighRef.current = 0
@@ -151,6 +163,19 @@ export default function Dashboard() {
       setIsLive(true)
       setChannel(channelInput.toLowerCase())
       setMessages([])
+
+      // Track a stream session so hype moments can be tied to a VOD later (rush pipeline, beta)
+      if (sessionUser) {
+        fetch('/api/streams/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ channel: channelInput.toLowerCase() }),
+        })
+          .then(r => r.json())
+          .then(d => { streamIdRef.current = d.stream?.id ?? null })
+          .catch(() => { streamIdRef.current = null })
+      }
     }
 
     ws.onmessage = (event) => {
@@ -165,7 +190,18 @@ export default function Dashboard() {
       }
     }
 
-    ws.onclose = () => setIsLive(false)
+    ws.onclose = () => {
+      setIsLive(false)
+      if (streamIdRef.current) {
+        fetch('/api/streams/end', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ stream_id: streamIdRef.current }),
+        }).catch(() => {})
+        streamIdRef.current = null
+      }
+    }
     ws.onerror = () => setIsLive(false)
   }
 
@@ -173,6 +209,16 @@ export default function Dashboard() {
     twitchClientRef.current?.close()
     twitchClientRef.current = null
     setIsLive(false)
+
+    if (streamIdRef.current) {
+      fetch('/api/streams/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ stream_id: streamIdRef.current }),
+      }).catch(() => {})
+      streamIdRef.current = null
+    }
   }
 
   const scoreColor = (score: number) =>

@@ -27,6 +27,21 @@ export interface Stream {
   channel: string
   started_at: string
   ended_at?: string
+  twitch_vod_id?: string
+  twitch_vod_url?: string
+}
+
+export interface RushMoment {
+  id: string
+  stream_id: string
+  user_id: string
+  hype_score: number
+  occurred_at: string
+  status: 'pending' | 'processed' | 'failed'
+  storage_path?: string
+  clip_url?: string
+  duration_seconds?: number
+  created_at: string
 }
 
 export interface Score {
@@ -103,5 +118,27 @@ export async function getUserByWidgetToken(token: string): Promise<User | null> 
     .select('*')
     .eq('widget_token', token)
     .single()
+  return data
+}
+
+// --- Rush (VOD highlight extraction, beta) ---
+
+export async function createRushMoment(stream_id: string, user_id: string, hype_score: number): Promise<RushMoment> {
+  const { data, error } = await supabaseAdmin
+    .from('rush_moments')
+    .insert({ stream_id, user_id, hype_score })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function getRushMoments(user_id: string): Promise<RushMoment[]> {
+  const { data, error } = await supabaseAdmin
+    .from('rush_moments')
+    .select('*')
+    .eq('user_id', user_id)
+    .order('occurred_at', { ascending: false })
+  if (error) throw error
   return data
 }

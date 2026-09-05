@@ -12,15 +12,30 @@ interface Clip {
   created_at: string
 }
 
+interface RushMoment {
+  id: string
+  hype_score: number
+  occurred_at: string
+  status: 'pending' | 'processed' | 'failed'
+  clip_url: string | null
+  duration_seconds: number | null
+}
+
 export default function Rush() {
   const [clips, setClips] = useState<Clip[]>([])
+  const [moments, setMoments] = useState<RushMoment[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetch('/api/clips')
-      .then(r => r.json())
-      .then(d => { setClips(d.clips ?? []); setLoading(false) })
+    Promise.all([
+      fetch('/api/clips').then(r => r.json()),
+      fetch('/api/rush/moments').then(r => r.json()),
+    ]).then(([clipsData, momentsData]) => {
+      setClips(clipsData.clips ?? [])
+      setMoments(momentsData.moments ?? [])
+      setLoading(false)
+    })
   }, [])
 
   function toggleSelect(id: string) {
@@ -172,6 +187,43 @@ export default function Rush() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* VOD rush moments (beta) — cut from the full VOD instead of a native Twitch clip */}
+        {moments.length > 0 && (
+          <div style={{ marginTop: '3rem' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem' }}>🎬 VOD Rush <span style={{ color: '#adadb8', fontWeight: 600, fontSize: '0.85rem' }}>(beta)</span></h2>
+            <p style={{ color: '#adadb8', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              Hype moments cut straight from the full stream VOD. Processed after the stream ends — this can take a while.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+              {moments.map(moment => (
+                <div key={moment.id} style={{ backgroundColor: '#18181b', border: '1px solid #2a2a35', borderRadius: '0.875rem', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', aspectRatio: '16/9', backgroundColor: '#0e0e10' }}>
+                    {moment.status === 'processed' && moment.clip_url ? (
+                      <video src={moment.clip_url} controls style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#adadb8', fontSize: '0.8rem' }}>
+                        <div style={{ fontSize: '2rem' }}>{moment.status === 'failed' ? '⚠️' : '⏳'}</div>
+                        {moment.status === 'failed' ? 'Processing failed' : 'Processing...'}
+                      </div>
+                    )}
+                    <div style={{
+                      position: 'absolute', top: 8, right: 8,
+                      backgroundColor: scoreColor(moment.hype_score),
+                      color: '#fff', fontWeight: 800, fontSize: '0.75rem',
+                      padding: '0.2rem 0.6rem', borderRadius: '9999px',
+                    }}>
+                      🔥 {moment.hype_score}
+                    </div>
+                  </div>
+                  <div style={{ padding: '0.875rem' }}>
+                    <span style={{ color: '#adadb8', fontSize: '0.75rem' }}>{formatDate(moment.occurred_at)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
